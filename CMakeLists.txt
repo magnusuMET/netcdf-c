@@ -1475,18 +1475,19 @@ MACRO(GEN_m4 filename)
 
   IF(HAVE_M4)
 
-  # If m4 is available, remove generated file if it exists.
-  IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.c)
-    FILE(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.c)
-  ENDIF()
-
   ADD_CUSTOM_COMMAND(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.c
+      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${filename}.c
     COMMAND ${NC_M4}
-    ARGS ${M4FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.m4 > ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.c
+    ARGS ${M4FLAGS} ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.m4 > ${CMAKE_CURRENT_BINARY_DIR}/${filename}.c
     VERBATIM
     )
-ENDIF(HAVE_M4)
+  ELSE(HAVE_M4)
+    IF(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.c)
+        FILE(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${filename}.c DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    ELSE()
+        MESSAGE(FATAL_ERROR "file ${CMAKE_CURRENT_SOURCE_DIR}/{filename}.c does not exists, and m4 is not available to create the file")
+    ENDIF()
+  ENDIF(HAVE_M4)
 ENDMACRO(GEN_m4)
 
 # Binary tests, but ones which depend on value of 'TEMP_LARGE' being defined.
@@ -2008,10 +2009,8 @@ INSTALL(FILES "${netCDF_BINARY_DIR}/libnetcdf.settings"
 #####
 configure_file(
   ${netCDF_SOURCE_DIR}/include/netcdf_meta.h.in
-  ${netCDF_SOURCE_DIR}/include/netcdf_meta.h @ONLY)
+  ${netCDF_BINARY_DIR}/include/netcdf_meta.h @ONLY)
 
-FILE(COPY ${netCDF_SOURCE_DIR}/include/netcdf_meta.h
-  DESTINATION ${netCDF_BINARY_DIR}/include/)
 
 #####
 # Build test_common.sh
@@ -2032,16 +2031,20 @@ IF(ENABLE_EXAMPLES)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/nc_test4/findplugin.in ${CMAKE_CURRENT_BINARY_DIR}/examples/C/findplugin.sh @ONLY NEWLINE_STYLE LF)
 ENDIF()
 
-#####
-# Build ncdap_test|dap4_test/findtestserver[4].c
-#####
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/findtestserver.c.in ${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/findtestserver.c @ONLY NEWLINE_STYLE LF)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/findtestserver.c.in ${CMAKE_CURRENT_SOURCE_DIR}/dap4_test/findtestserver4.c @ONLY NEWLINE_STYLE LF)
+IF(ENABLE_TESTS)
+    #####
+    # Build ncdap_test|dap4_test/findtestserver[4].c
+    #####
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/findtestserver.c.in ${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/findtestserver.c @ONLY NEWLINE_STYLE LF)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/findtestserver.c.in ${CMAKE_CURRENT_SOURCE_DIR}/dap4_test/findtestserver4.c @ONLY NEWLINE_STYLE LF)
+ENDIF()
 
-#####
-# Build dap4_test/pingurl4.c
-#####
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/pingurl.c ${CMAKE_CURRENT_SOURCE_DIR}/dap4_test/pingurl4.c @ONLY NEWLINE_STYLE LF)
+IF(ENABLE_TESTS)
+    #####
+    # Build dap4_test/pingurl4.c
+    #####
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ncdap_test/pingurl.c ${CMAKE_CURRENT_SOURCE_DIR}/dap4_test/pingurl4.c @ONLY NEWLINE_STYLE LF)
+ENDIF()
 
 ####
 # Export files

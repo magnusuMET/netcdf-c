@@ -2,15 +2,13 @@
 # Copyright 2012-2018, see the COPYRIGHT file for more information.
 
 # Process these files with m4.
-SET(m4_SOURCES attr ncx putget t_ncxx)
+SET(m4_SOURCES attr ncx putget)
 foreach (f ${m4_SOURCES})
-  IF(HAVE_M4)
-    GEN_m4(${f})
-  ENDIF()
+  GEN_m4(${f})
 endforeach(f)
 
-SET(libsrc_SOURCES v1hpg.c putget.c attr.c nc3dispatch.c
-  nc3internal.c var.c dim.c ncx.c lookup3.c ncio.c)
+SET(libsrc_SOURCES v1hpg.c ${CMAKE_CURRENT_BINARY_DIR}/putget.c ${CMAKE_CURRENT_BINARY_DIR}/attr.c nc3dispatch.c
+    nc3internal.c var.c dim.c ${CMAKE_CURRENT_BINARY_DIR}/ncx.c lookup3.c ncio.c)
 
 SET(libsrc_SOURCES ${libsrc_SOURCES} pstdint.h ncio.h ncx.h)
 
